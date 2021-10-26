@@ -1,0 +1,128 @@
+#from AppWorks.File.POPFolder import POPFolder
+#from AppWorks.File import Perms, Flags
+from etoffiutils import quickWrite, ensure_directory_present, true, false
+
+from Base.App_ import App
+
+from File.System_ import System
+from File.Desc_ import Desc
+from File.Flags_ import Flags, Blank_Flags
+from File import Perms
+
+from DBi.Server import AwxDBiServer as Server
+
+from ConfParser import ConfParser as ConfigParser
+
+class xx_Desc:
+	def __init__(self, path):
+		self.path = path
+
+server, user, passwd = 'localhost', 'user', 'secret'
+
+def x_readdef ():
+	f = open ('def')
+	global server, user, passwd
+	server = f.readline()[:-1]
+	user   = f.readline()[:-1]
+	passwd = f.readline()[:-1]
+	f.close()
+
+def xx_do_login ():
+	handler = POPFolder()
+
+	#######################################
+	# login to the server
+	dd = _Desc('/pop/'+server+'/login/'+user+'/'+passwd)
+	ff = Flags()
+	login_handle = handler.open(dd, Perms.Read, ff)
+	return handler, dd, ff, login_handle 
+	
+def xx_write_out (n, lines):
+	quickWrite('out/%d'%n, lines)
+
+def readdef ():
+	c = ConfigParser ()
+	c.read ('POPFolderTest.ini')
+	global server, user, passwd
+	server = c.get ('root', 'server')
+	user   = c.get ('root', 'user')
+	passwd = c.get ('root', 'passwd')
+	c = None
+	
+def do_login_002 ():
+	dd = oixfs.enumerateFirstByName ('/pop/%s/login/%s/%s' % (server, user, passwd))
+	handler = dd.host
+#	login_handle = handler.open(dd, Perms.Read, Blank_Flags)
+	login_handle = oixfs.open(dd, Perms.Read, Blank_Flags)
+	return handler, dd, Blank_Flags, login_handle 
+
+def do_login (sname, user, passwd, oixfs, ctx):
+	dd = oixfs.stat ('/pop/%s/login' % sname, ctx)
+	handler = dd.host
+#	login_handle = handler.open(dd, Perms.Read, Blank_Flags)
+	login_handle = oixfs.open(dd, Perms.Read, Blank_Flags, ctx)
+	rv = (None, dd, None, None)
+	if login_handle:
+		if login_handle.write_string ('user '+user) != None:
+			if login_handle.write_string ('pass '+passwd) != None:
+				assert (handler == login_handle.host)
+				rv = (handler, dd, Blank_Flags, login_handle)
+	print 747, rv
+	return rv
+
+def write_out (n, lines):
+	dd = Desc ('out/%d'%n)
+	hh = oixfs.open (dd, Perms.Read, Blank_Flags)
+	rv = false
+	if hh:
+		for each in lines:
+			hh.write (each, len(each))
+		rv = true
+		hh = None
+	return rv
+
+class xxDBiHandle:
+	def __init__ (self):
+		self.srv = DBiServer #()
+	def getStr (self, str):
+		return self.srv.getStr (str)
+
+		
+class DefaultApp (App):
+	def preInit (self):
+		self._my_info_server = Server ()
+		self._my_file_server = System (self)
+#		self._setBasicInformation (Server (), System (self))
+	def do_run (self):
+		oixfs = self.get_shared_file_server ()
+		#######################################
+		# initialize
+		readdef()
+		#######################################
+		# login to the server
+		# obtain handler (usu would be transparent)
+		handler, dd, ff, login_handle = do_login (server, user, passwd, oixfs, self)
+		
+		ensure_directory_present('out')
+		for n in range(1,10):
+			dd     = Desc('/pop/%s-%s/msgnum/%d' % (server, user, n))
+			handle = handler.open(dd, Perms.Read, ff)
+			try:
+				# dont delete until we know it written
+				if write_out (n, handle.readlines()):
+					if handler.unlink(handle.myDesc) == true:
+						print '-- file removed'
+					else:
+						print '-- file not removed'
+				else:
+					print '-- file was not written'
+			except:
+				pass
+		##	print "vvcls"
+			handle.close()
+			
+		login_handle.close()
+
+app = DefaultApp ()
+app.init (None)
+app.run ()

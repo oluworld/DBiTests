@@ -1,0 +1,22 @@
+if 0:
+	get_dbi_handle = None
+	
+	try:
+		from DBi.Handle import AwxDBi
+	
+		def get_dbi_handle_x (xx):
+			rv = AwxDBi (xx)
+			return rv
+		get_dbi_handle = get_dbi_handle_x
+	except ImportError:
+		pass
+	
+	
+from DBi.Server import AwxDBiServer
+
+def get_dbi_handle (xx):
+#	rv = AwxDBiServer (xx)
+	rv = AwxDBiServer ()
+	return rv
+
+#eof

@@ -1,0 +1,3 @@
+[DBiIni]
+~/FileSystem/TargetPoints/pop = POPFolder
+~/FileSystem/TargetPoints/local = StdFSHandler

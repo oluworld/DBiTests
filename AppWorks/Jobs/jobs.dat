@@ -1,0 +1,12 @@
+%%
+sync_newsgroup-comp.foo-12345689
+invocation
+7
+invokable-class SyncNewsgroup
+group_name comp.foo
+server news
+interval 2
+sync_type start
+post-invokable OnetAddNewsgroupMessage
+post-invoke-options save-headers extract-contents #delete-orig
+%%

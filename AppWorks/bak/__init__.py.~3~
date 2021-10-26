@@ -1,0 +1,32 @@
+from DBi.Handle_ import *
+
+import DBi.Server
+DBi.Server.DBiServer = DBi.Server.getDBiServer ()
+
+class App:
+	def __init__ (self):
+		self.do_run ()
+	def quit (self):
+		pass
+		
+class DefaultApp (App):
+	def do_run (self):
+		my_dbi = Handle (self)
+		my_dbi.setRoot ("~/Programs/OluWorld/DBiTest/")
+		c = my_dbi.enum ("")
+
+		print my_dbi.enumStr ('')
+
+		print len(c)
+
+		for each in c:
+			print each.getName (), '\t', each.value
+
+		c = my_dbi.enum ("../Typeman/")
+		
+		for each in c:
+			print each.getName (), '\t', each.value
+
+		self.quit ()
+
+app = DefaultApp ()

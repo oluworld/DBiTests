@@ -1,0 +1,167 @@
+import Value
+from etoffiutils import true, false, nequals, progressiveParse
+from RCHandler import RCDBiHandler
+#import sys
+#import traceback
+from Structure import *
+from File.System_ import oixfs
+from File.Desc_ import Desc as FileDesc
+
+class errNotFound(Exception):
+	pass
+class AwxDBiServer:
+	DBIROOT = 'q:/DBi/'
+	
+	def enum(self, topkey, root='~/', kind=EnumFlat):
+		rv = []
+		top = self.translatePath(topkey, root)
+		print 'TOP', top
+		if 1:
+			path=top
+			b = progressiveParse (path, '/')
+			for parsePath in b[:-3]:
+				print "parsePath", parsePath
+				if oixfs.exists (parsePath):
+					h = self.handlerForPath (parsePath)
+					if h:
+						rv = h.enum (top)
+					else:
+						self.log ('No handler for path %s' % parsePath)
+		return rv
+
+	def get(self, path, root):
+##		print 99, path, root
+		search = self.translatePath(path, root)
+##		print 100, search
+		if self.entries.has_key(search):
+			return self.entries[search]
+		look = self.__lookup(search)
+		if not look:
+			print "search =",search
+			raise errNotFound() ## TODO:
+		self.entries[search] = look
+		return look
+	def getStr(self, path, root):
+		rv = self.get(path, root).getStr()
+		return rv
+	def getStrOrNil(self, path, root):
+		try:
+			return self.getStr(path, root)
+		except errNotFound:
+			return None
+	def __lookup(self, path):
+		rv   = None
+#		path = self.translatePath(path_, '~/')
+		AWX_DBI_NEWACTION = false
+		if AWX_DBI_NEWACTION == true:
+			b = progressiveParse(path, '/')
+			for parsePath in b:
+				if fileSystem.exists(parsePath):
+					h = self.handlerForPath(parsePath)
+					if h:
+						rv = h.getValue(path)
+					else:
+						self.log('No handler for path %s' % parsePath)
+		else:
+			for iterdata in self.handlers:
+##				print 'LPO',iterdata
+				if iterdata.canOpen(path, FOR_GET):
+					## place iterdata at top of handler stack
+##					print self.entries
+					rv = iterdata.getValue(path)
+			## throws an exception in AbxLib (errNotFound)
+##		print '%% lookup (%s) -> %s' % (path, rv)
+		return rv
+	def translatePath(self, path, root):
+##		print 'UU', root, '\t', path
+		def _fix(root, path):
+			def replace_begin(instr, replacethis, withthis):
+				if nequals(instr, replacethis):
+					rv = withthis+instr[len(replacethis):]
+				else:
+					rv = instr
+				return rv
+			root = replace_begin(root, '~/', '/local/DBi/')
+			path = replace_begin(path, '~/', root or '/local/DBi/')
+##			path = replace_begin(path, './', root)
+			return root,path
+		root, path = _fix(root, path)
+		rv = ''
+		if not nequals(path, root):
+			if len(root): rv += root
+			if rv[-1:] != '/': rv += '/'
+		rv = rv + path
+##		print 'translated path is', rv
+		return rv
+	def handlerForPath(self, path):
+		fd = FileDesc(path)
+		s='/local/DBi/FileTypes/%s/Handlers/DBiHandler'
+		handlerPath = s%fd.getType().toString() # ShellContext, etc
+		handlerName = DBiServer.getStr(handlerPath)
+		rv = eval('%s()'%handlerName)
+		return rv
+
+	## locking -------------------------------------------------
+	def lock(self):
+		self.locked = true
+	def unlock(self):
+		self.locked = false
+		self.lockedlist = []
+
+	## adding --------------------------------------------------
+	def addAddListener (self, aListener):
+##		print "preadd", self.addListeners
+		self.addListeners.append (aListener)
+##		print "postadd", self.addListeners
+	def removeAddListener (self, aListener):
+		self.addListeners.remove (aListener)
+	def add(self, line):
+##		print "** DBiServer.addLine (", line, ")"
+		self.entries[line.path]=line
+		##
+		evt = DBiServerAddEvent (line, line.path, self)
+##		print "yy", self.addListeners
+		for each in self.addListeners:
+			each.actionPerformed (evt)
+		evt = None # TODO: is this right??
+		##
+##		print "** tb **"
+##		traceback.print_stack(file=sys.stdout)
+		##
+		if self.locked:
+			self.lockedlist.append(line)
+
+	def getRoot (self):
+		return self.DBIROOT
+	def __init__(self):
+		self.unlock()
+		dhl = DBiHandlerListener (self)
+		rc = RCDBiHandler (self.getRoot)
+		rc.addAddListener (dhl)
+		self.handlers 		= [rc]
+		self.entries 		= {}
+		self.addListeners 	= []
+
+	def __del__ (self):
+		try:
+			for each in self.handlers:
+				each = None
+		except AttributeError:
+			pass
+
+##_DBiServer = None
+#
+##def getDBiServer():
+##	global _DBiServer
+##	if _DBiServer == None:
+##		_DBiServer = AwxDBiServer()
+##	return _DBiServer
+#
+##DBiServer = getDBiServer()
+##print 'xxg ', `DBiServer`
+##print 'xgx ', `DBiServer.lockedlist`
+
+
+DBiServer = AwxDBiServer()
+
+#eof

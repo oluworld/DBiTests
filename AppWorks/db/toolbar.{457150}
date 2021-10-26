@@ -1,0 +1,61 @@
+toolbar/Main/1/type = item
+toolbar/Main/1/name = next
+toolbar/Main/1/tooltip = Next statement
+toolbar/Main/1/pixmap = /home/olu/local/data/gtkdb/next.xpm
+toolbar/Main/1/callback = do_next
+
+toolbar/Main/2/type = item
+toolbar/Main/2/name = step
+toolbar/Main/2/tooltip = Step into function
+toolbar/Main/2/pixmap = /home/olu/local/data/gtkdb/step.xpm
+toolbar/Main/2/callback = do_step
+
+toolbar/Main/3/type = separator
+
+toolbar/Main/4/type = item
+toolbar/Main/4/name = return
+toolbar/Main/4/tooltip = Continue execution to end of function
+toolbar/Main/4/pixmap = /home/olu/local/data/gtkdb/return.xpm
+toolbar/Main/4/callback = do_return
+
+toolbar/Main/5/type = separator
+
+toolbar/Main/6/type = item
+toolbar/Main/6/name = continue
+toolbar/Main/6/tooltip = Continue execution to next break point
+toolbar/Main/6/pixmap = /home/olu/local/data/gtkdb/continue.xpm
+toolbar/Main/6/callback = do_continue
+
+toolbar/Main/7/type = item
+toolbar/Main/7/name = break
+toolbar/Main/7/tooltip = toggle break point at selected line
+toolbar/Main/7/pixmap = /home/olu/local/data/gtkdb/break.xpm
+toolbar/Main/7/callback = do_break
+
+toolbar/Main/8/type = separator
+
+toolbar/Main/9/type = item
+toolbar/Main/9/name = edit
+toolbar/Main/9/tooltip = edit the value of the selected variable
+toolbar/Main/9/pixmap = /home/olu/local/data/gtkdb/edit.xpm
+toolbar/Main/9/callback = do_edit
+
+toolbar/Main/10/type = item
+toolbar/Main/10/name = view
+toolbar/Main/10/tooltip = view a list or object
+toolbar/Main/10/pixmap = /home/olu/local/data/gtkdb/view.xpm
+toolbar/Main/10/callback = do_view
+
+toolbar/Main/11/type = item
+toolbar/Main/11/name = run
+toolbar/Main/11/tooltip = Execute some code in the current stack context
+toolbar/Main/11/pixmap = /home/olu/local/data/gtkdb/run.xpm
+toolbar/Main/11/callback = do_run
+
+toolbar/Main/12/type = separator
+
+toolbar/Main/13/type = item
+toolbar/Main/13/name = quit
+toolbar/Main/13/tooltip = Quit the debugger
+toolbar/Main/13/pixmap = /home/olu/local/data/gtkdb/quit.xpm
+toolbar/Main/13/callback = do_quit

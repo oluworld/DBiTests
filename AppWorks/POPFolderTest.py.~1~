@@ -1,0 +1,92 @@
+#from AppWorks.File.POPFolder import POPFolder
+#from AppWorks.File import Perms, Flags
+from etoffiutils import quickWrite, ensure_directory_present, true, false
+
+from File.System_ import oixfs
+from File.Desc_ import Desc
+from File.Flags_ import Flags
+from File import Perms
+ 
+from ConfParser import ConfParser as ConfigParser
+
+class xx_Desc:
+	def __init__(self, path):
+		self.path = path
+
+server, user, passwd = 'localhost', 'user', 'secret'
+
+def x_readdef ():
+	f = open ('def')
+	global server, user, passwd
+	server = f.readline()[:-1]
+	user   = f.readline()[:-1]
+	passwd = f.readline()[:-1]
+	f.close()
+
+def xx_do_login ():
+	handler = POPFolder()
+
+	#######################################
+	# login to the server
+	dd = _Desc('/pop/'+server+'/login/'+user+'/'+passwd)
+	ff = Flags()
+	login_handle = handler.open(dd, Perms.Read, ff)
+	return handler, dd, ff, login_handle 
+	
+def xx_write_out (n, lines):
+	quickWrite('out/%d'%n, lines)
+
+def readdef ():
+	c = ConfigParser ()
+	c.read ('POPFolderTest.ini')
+	global server, user, passwd
+	server = c.get ('root', 'server')
+	user   = c.get ('root', 'user')
+	passwd = c.get ('root', 'passwd')
+	c = None
+	
+def do_login ():
+	dd = oixfs.enumerateFirstByName ('/pop/%s/login/%s/%s' % (server, user, passwd))
+	handler = dd.host
+	ff = Flags()
+#	login_handle = handler.open(dd, Perms.Read, ff)
+	login_handle = oixfs.open(dd, Perms.Read, ff)
+	return handler, dd, ff, login_handle 
+
+def write_out (n, lines):
+	hh = Desc ('out/%d'%n)
+	rv = false
+	if hh:
+		for each in lines:
+			hh.write (each, len(each))
+		rv = true
+		hh = None
+	return rv
+		
+#######################################
+# initialize
+readdef()
+#######################################
+# login to the server
+# obtain handler (usu would be transparent)
+handler, dd, ff, login_handle = do_login ()
+
+ensure_directory_present('out')
+for n in range(1,10):
+	dd     = _Desc('/pop/%s-%s/msgnum/%d' % (server, user, n))
+	handle = handler.open(dd, Perms.Read, ff)
+	try:
+		# dont delete until we know it written
+		if write_out (n, handle.readlines()):
+			if handler.unlink(handle.myDesc) == true:
+				print '-- file removed'
+			else:
+				print '-- file not removed'
+		else:
+			print '-- file was not written'
+	except:
+		pass
+##	print "vvcls"
+	handle.close()
+	
+login_handle.close()
