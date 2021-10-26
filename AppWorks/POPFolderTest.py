@@ -99,7 +99,12 @@ class DefaultApp (App):
 		#login_handle.close()
 
 def AppWorksMain(app):
-	class Z(AwxBase2):pass
+	class Z(AwxBase2):
+		def __init__(self):
+			self._my_info_server = InitialServer()
+			self._my_file_server = InitialSystem(initial)
+			self._my_file_server.initialize(initial)
+	
 	initial = Z()
 	initial._my_info_server = InitialServer ()
 	initial._my_file_server = InitialSystem (initial)
