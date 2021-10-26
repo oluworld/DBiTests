@@ -108,11 +108,21 @@ class DefaultApp(App):
 
 
 def AppWorksMain(app):
+	class Primordial:
+		def __init__(self):
+			self._my_file_server = InitialSystem(self)
+		
+		def get_shared_information_server(self):
+			return None
+
+		def get_shared_file_server(self):
+			return None  ## self._my_file_server
+
 	class Z(AwxBase2):
 		def __init__(self):
 			self._my_info_server = InitialServer()
-			self._my_file_server = InitialSystem(initial)
-			self._my_file_server.initialize(initial)
+			self._my_file_server = InitialSystem(Primordial())
+			self._my_file_server.initialize(self)
 	
 	initial = Z()
 	# --
